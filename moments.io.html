@@ -1,0 +1,556 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Aviva Mobile Flow</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #090b14;
+      color: #f7f5ff;
+    }
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(89,113,255,.18), transparent 32%),
+                  radial-gradient(circle at bottom right, rgba(196,91,255,.16), transparent 20%),
+                  #090b14;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px;
+    }
+    #phone {
+      width: min(430px, 100vw - 16px);
+      min-height: 760px;
+      border-radius: 40px;
+      overflow: visible;
+      background: linear-gradient(180deg, rgba(12,16,30,1), rgba(7,10,22,1));
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 40px 100px rgba(0,0,0,.28);
+      position: relative;
+    }
+    #screen {
+      width: 100%;
+      display: grid;
+      grid-auto-flow: row;
+      gap: 18px;
+      overflow: visible;
+      padding: 20px;
+    }
+    .screen {
+      display: block;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      overflow: visible;
+      animation: fadeIn .28s ease;
+    }
+    .screen.active { display: block; }
+    .hidden { display: none !important; }
+    .card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      backdrop-filter: blur(18px);
+    }
+    .title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 0 10px;
+      letter-spacing: -.02em;
+    }
+    .subtitle {
+      margin: 0;
+      color: #d5d0ff;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .hint {
+      margin-top: 12px;
+      color: #a69dff;
+      font-size: .96rem;
+    }
+    input[type=text] {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: #f8f6ff;
+      padding: 14px 16px;
+      font-size: 1rem;
+      outline: none;
+      margin-top: 16px;
+    }
+    input[type=text]::placeholder { color: rgba(255,255,255,.45); }
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #6f65ff, #3dccff);
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+      box-shadow: 0 18px 30px rgba(33,42,78,.22);
+      width: 100%;
+    }
+    button:hover { transform: translateY(-1px); }
+    .text-block {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      padding: 18px;
+      color: #ece9ff;
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+    .typetext {
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-size: 1.2rem;
+    }
+    .highlight { color: #fff4b1; }
+    .image-placeholder,
+    .video-placeholder {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border-radius: 26px;
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,.75);
+      text-align: center;
+      border: 1px dashed rgba(255,255,255,.16);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .image-placeholder::after,
+    .video-placeholder::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .9rem;
+      color: rgba(255,255,255,.45);
+    }
+    .image-placeholder img,
+    .video-placeholder video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 22px;
+    }
+    .gallery {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .gallery::before,
+    .gallery::after {
+      content: '';
+      flex: 0 0 16px;
+    }
+    .memory-card {
+      flex: 0 0 180px;
+      min-width: 180px;
+      border-radius: 32px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: 1rem;
+      color: #f5f3ff;
+      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(127, 73, 255, .12));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 12px 28px rgba(0,0,0,.16);
+      padding: 16px;
+      scroll-snap-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .memory-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 22px;
+    }
+    .memory-card::before {
+      content: '✨';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 1.2rem;
+      opacity: .35;
+      transform: rotate(12deg);
+    }
+    .memory-card:nth-child(odd)::before {
+      content: '💖';
+    }
+    .memory-card:nth-child(3n)::before {
+      content: '🌙';
+    }
+    .emoji-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .option {
+      text-align: left;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      color: #fdfbff;
+      box-shadow: none;
+    }
+    .option:hover { background: rgba(255,255,255,.08); }
+    .status {
+      margin-top: 14px;
+      color: #b8b0ff;
+      font-size: .96rem;
+    }
+    .flower-trail {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .flower {
+      position: absolute;
+      opacity: 0;
+      animation: floatUp 3s ease-in infinite;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(0) scale(.9); }
+      10% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-110px) scale(1.1); }
+    }
+    .bottom-space { margin-bottom: 22px; }
+  </style>
+</head>
+<body>
+  <div id="phone">
+    <div class="flower-trail"></div>
+    <div id="screen">
+      <div id="password-screen" class="screen active">
+        <div class="card">
+          <p class="title">Only Aviva is allowed beyond this point ❤️🔐</p>
+          <p class="subtitle">Enter the secret name to continue.</p>
+          <input id="password-input" type="text" placeholder="The name I call you with..." autocomplete="off" />
+          <p class="hint">Hint: The name I call you with 😌</p>
+          <button id="password-submit" class="button bottom-space">Let me in</button>
+          <p id="password-status" class="status"></p>
+        </div>
+      </div>
+      <div id="story-content" class="hidden">
+        <div id="typing-screen" class="screen">
+          <div class="card typetext" id="typing-text"></div>
+        </div>
+        <div id="story-1-screen" class="screen">
+          <div class="image-placeholder" data-label="Image 1">
+            <img src="Image 1.jpeg" alt="Image 1" />
+          </div>
+          <div class="card text-block">
+            <p>Every story has a beginning… and somehow, ours started at Amity Global Business School ❤️</p>
+          </div>
+        </div>
+        <div id="story-2-screen" class="screen">
+          <div class="image-placeholder" data-label="Image 2">
+            <img src="Image 2.jpeg" alt="Image 2" />
+          </div>
+          <div class="card text-block">
+            <p>From being complete strangers…<br>to becoming each other’s lifeline ❤️</p>
+            <p>From travelling for college…<br>to our first international trip 🌍</p>
+            <p>From café hopping…<br>to now realizing that meeting matters more than the place ☕</p>
+            <p>Assignments, sleepless nights, managing events…<br>to YOU hosting your own art workshop 😭✨</p>
+            <p>It’s not like there was one moment<br>when everything changed…</p>
+            <p>We just went with the flow—<br>and somewhere in between…<br>magic happened ✨</p>
+          </div>
+        </div>
+        <div id="transition-1-screen" class="screen">
+          <div class="card text-block">
+            <p>And for the first time…<br>I actually didn’t know how to roast you 😭💀</p>
+          </div>
+        </div>
+        <div id="roast-screen" class="screen">
+          <div class="card text-block">
+            <p>Pata nahi kyun…<br>yeh bhi mushkil se hua 💀</p>
+            <p>Tujhe mujhe itni cheezein bana ke khilani thi—<br>tune nahi kiya 😌<br>ab yeh saal mein karne wali hai tu 😤</p>
+            <p>Aur haan—<br>thoda patience rakh<br>full Don attitude 😌🔥<br>aur thoda chillana kam kar please 😭💀</p>
+          </div>
+        </div>
+        <div id="transition-2-screen" class="screen">
+          <div class="card text-block">
+            <p>But okay… enough of me talking 😌<br>Let’s see if you actually deserve to move ahead 👀</p>
+          </div>
+        </div>
+        <div id="game-intro-screen" class="screen">
+          <div class="card text-block">
+            <p>Answer honestly, Bachaa…<br>only YOU can unlock what’s next ❤️</p>
+          </div>
+          <button class="button" type="button" onclick="startGame()">Start challenge</button>
+        </div>
+        <div id="game-screen" class="screen hidden">
+          <div class="card text-block">
+            <p id="game-question" class="title"></p>
+            <div id="game-options" class="emoji-row"></div>
+            <p id="game-response" class="status"></p>
+          </div>
+        </div>
+        <div id="unlock-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>Access Granted ❤️</p>
+            <p>Welcome, Ma’am 😌✨</p>
+          </div>
+        </div>
+        <div id="video-transition-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>Us being us ❤️</p>
+          </div>
+        </div>
+        <div id="video-screen" class="screen hidden">
+          <div class="video-placeholder" data-label="Video.mp4">
+            <video controls preload="metadata">
+              <source src="Video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="card text-block">
+            <p>Us being us ❤️</p>
+            <p>Watch the video above.</p>
+          </div>
+        </div>
+        <div id="emotional-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>Bachaa… jokes apart—<br>you are an amazing person ❤️<br>and more than that… an amazing soul ✨</p>
+            <p>You’re the one in front of whom<br>I can be the most expressive</p>
+            <p>My mood feels better<br>just by you being around 🫶</p>
+            <p>And I know…<br>whatever I do in life—<br>you’ll always be there<br>in both good and bad ✨</p>
+            <p>I’m so proud of everything you’re doing right now…<br>and I know you’ll achieve everything you want ❤️</p>
+            <p>Aur haan…<br>boyfriend bhi mil jaayega jaldi 😌<br>chill reh tu 😂</p>
+          </div>
+        </div>
+        <div id="memory-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>Every moment with you…<br>is something I’d choose again and again 🫶</p>
+          </div>
+          <div class="gallery">
+            <div class="memory-card"><img src="Image 3.jpeg" alt="Memory 3" /></div>
+            <div class="memory-card"><img src="Image 4.jpeg" alt="Memory 4" /></div>
+            <div class="memory-card"><img src="Image 5.jpeg" alt="Memory 5" /></div>
+            <div class="memory-card"><img src="Image 6.jpeg" alt="Memory 6" /></div>
+            <div class="memory-card"><img src="Image 7.jpeg" alt="Memory 7" /></div>
+            <div class="memory-card"><img src="Image 8.jpeg" alt="Memory 8" /></div>
+            <div class="memory-card"><img src="Image 9.jpeg" alt="Memory 9" /></div>
+            <div class="memory-card"><img src="Image 10.jpg" alt="Memory 10" /></div>
+            <div class="memory-card"><img src="Image 11.jpeg" alt="Memory 11" /></div>
+          </div>
+        </div>
+        <div id="final-transition-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>And after everything…<br>there’s just one thing I want to say 💌</p>
+          </div>
+        </div>
+        <div id="final-screen" class="screen hidden">
+          <div class="card text-block">
+            <p>Bachaa… thank you ❤️</p>
+            <p>For coming into my life…<br>for being there…<br>for tolerating me (and yes, vice versa 😌💀)</p>
+            <p>For understanding me…<br>for scolding me…<br>and most importantly—<br>for handling me when I couldn’t handle myself 🫶</p>
+            <p>You are the reason<br>I believe in friendship the way I do today ✨</p>
+            <p>You are truly the best…</p>
+            <p class="highlight">I love you ❤️✨</p>
+          </div>
+          <button class="button" onclick="restart()">Replay</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <audio id="bg-music" loop preload="auto">
+    <source src="Drama Queen Audio.mpeg" type="audio/mpeg" />
+    Your browser does not support audio playback.
+  </audio>
+  <script>
+    const flowerTrail = document.querySelector('.flower-trail');
+    const passwordScreen = document.getElementById('password-screen');
+    const storyContent = document.getElementById('story-content');
+    const passwordInput = document.getElementById('password-input');
+    const passwordStatus = document.getElementById('password-status');
+    const passwordSubmit = document.getElementById('password-submit');
+    const typingText = document.getElementById('typing-text');
+    const gameQuestion = document.getElementById('game-question');
+    const gameOptions = document.getElementById('game-options');
+    const gameResponse = document.getElementById('game-response');
+    let currentQuestion = 0;
+    let screenTimer;
+
+    const questions = [
+      {
+        text: 'Your expressions during any situation are:',
+        options: ['Normal', 'Slightly dramatic', 'Full Netflix series 🎬💀 ✅'],
+        response: 'Expression Queen confirmed 😌👑'
+      },
+      {
+        text: 'What is your hidden talent?',
+        options: ['Irritating me 💀', 'Being cute 🥺', 'Being smart 🧠'],
+        response: 'I KNEW IT 😭 you enjoy this way too much'
+      },
+      {
+        text: 'Masai Mara mein kisko dekh ke bhaage the…\nnahi actually giri kiske vajah se 👀💀',
+        options: ['Baboons', 'Cow', 'Better not to say out loud 💀'],
+        response: 'Yeah… let’s keep that between us 😂'
+      }
+    ];
+    passwordSubmit.addEventListener('click', () => {
+      const value = passwordInput.value.trim().toLowerCase();
+      if (!value) {
+        passwordStatus.textContent = 'Enter the name to continue.';
+        return;
+      }
+      if (value === 'bachaa') {
+        passwordStatus.textContent = '';
+        passwordScreen.classList.add('hidden');
+        storyContent.classList.remove('hidden');
+        playMusic();
+        showFlowers();
+        startTyping('Bachaa… finally it’s the day ❤️\nAviva Day 😭🫶', typingText);
+        showQuestion();
+        setTimeout(() => {
+          document.getElementById('typing-screen').scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        passwordStatus.textContent = 'Oops, that is not the secret name. Try again.';
+      }
+    });
+    passwordInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') passwordSubmit.click();
+    });
+    function startTyping(text, element) {
+      element.textContent = '';
+      const chars = text.split('');
+      let index = 0;
+      const interval = setInterval(() => {
+        element.textContent += chars[index++];
+        if (index >= chars.length) {
+          clearInterval(interval);
+        }
+      }, 65);
+    }
+    function showFlowers() {
+      flowerTrail.innerHTML = '';
+      const icons = ['🌸', '🌺', '✨', '🎵', '💫'];
+      for (let i = 0; i < 12; i++) {
+        const flower = document.createElement('div');
+        flower.className = 'flower';
+        flower.textContent = icons[i % icons.length];
+        flower.style.left = `${8 + Math.random() * 82}%`;
+        flower.style.top = `${60 + Math.random() * 28}%`;
+        flower.style.animationDelay = `${Math.random() * 1.4}s`;
+        flower.style.fontSize = `${16 + Math.random() * 18}px`;
+        flowerTrail.appendChild(flower);
+      }
+    }
+    function playMusic() {
+      const bgMusic = document.getElementById('bg-music');
+      if (bgMusic) {
+        bgMusic.play().catch(() => {
+          console.warn('Music playback blocked until user interaction.');
+        });
+        return;
+      }
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        const notes = [523.25, 659.25, 783.99, 659.25, 523.25];
+        notes.forEach((frequency, index) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.value = frequency;
+          osc.type = 'triangle';
+          gain.gain.value = 0.08;
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + index * 0.18);
+          osc.stop(audioCtx.currentTime + index * 0.18 + 0.18);
+        });
+      } catch (error) {
+        console.warn('Audio not supported:', error);
+      }
+    }
+    function startGame() {
+      currentQuestion = 0;
+      gameResponse.textContent = '';
+      document.getElementById('game-screen').classList.remove('hidden');
+      showQuestion();
+      document.getElementById('game-screen').scrollIntoView({ behavior: 'smooth' });
+    }
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      gameQuestion.textContent = q.text;
+      gameOptions.innerHTML = '';
+      q.options.forEach(optionText => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.type = 'button';
+        button.textContent = optionText;
+        button.addEventListener('click', () => selectOption());
+        gameOptions.appendChild(button);
+      });
+    }
+    function selectOption() {
+      const q = questions[currentQuestion];
+      gameResponse.textContent = q.response;
+      Array.from(gameOptions.children).forEach(button => button.disabled = true);
+      screenTimer = setTimeout(nextGameQuestion, 1800);
+    }
+    function nextGameQuestion() {
+      currentQuestion += 1;
+      if (currentQuestion >= questions.length) {
+        document.getElementById('unlock-screen').classList.remove('hidden');
+        document.getElementById('video-transition-screen').classList.remove('hidden');
+        document.getElementById('video-screen').classList.remove('hidden');
+        document.getElementById('emotional-screen').classList.remove('hidden');
+        document.getElementById('memory-screen').classList.remove('hidden');
+        document.getElementById('final-transition-screen').classList.remove('hidden');
+        document.getElementById('final-screen').classList.remove('hidden');
+        gameResponse.textContent = 'You unlocked it! Scroll down to continue the story.';
+        document.getElementById('unlock-screen').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      gameResponse.textContent = '';
+      showQuestion();
+    }
+    function restart() {
+      passwordInput.value = '';
+      passwordStatus.textContent = '';
+      typingText.textContent = '';
+      flowerTrail.innerHTML = '';
+      storyContent.classList.add('hidden');
+      passwordScreen.classList.remove('hidden');
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('unlock-screen').classList.add('hidden');
+      document.getElementById('video-transition-screen').classList.add('hidden');
+      document.getElementById('video-screen').classList.add('hidden');
+      document.getElementById('emotional-screen').classList.add('hidden');
+      document.getElementById('memory-screen').classList.add('hidden');
+      document.getElementById('final-transition-screen').classList.add('hidden');
+      document.getElementById('final-screen').classList.add('hidden');
+      currentQuestion = 0;
+    }
+  </script>
+</body>
+</html>
+
