@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Aviva Mobile Flow</title>
+  <title>Aviva</title>
   <style>
     :root {
       color-scheme: dark;
@@ -134,13 +134,8 @@
     }
     .image-placeholder::after,
     .video-placeholder::after {
-      content: attr(data-label);
-      position: absolute;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: .9rem;
-      color: rgba(255,255,255,.45);
+      content: '';
+      display: none;
     }
     .image-placeholder img,
     .video-placeholder video {
@@ -151,24 +146,26 @@
     }
     .gallery {
       display: flex;
+      flex-direction: column;
       gap: 14px;
-      overflow-x: auto;
+      overflow-y: auto;
       padding-bottom: 8px;
-      scroll-snap-type: x mandatory;
+      scroll-snap-type: y mandatory;
       -webkit-overflow-scrolling: touch;
     }
     .gallery::before,
     .gallery::after {
       content: '';
-      flex: 0 0 16px;
+      flex: 0 0 0px;
     }
     .memory-card {
-      flex: 0 0 180px;
-      min-width: 180px;
+      flex: 0 0 auto;
+      width: 100%;
       border-radius: 32px;
-      aspect-ratio: 1 / 1;
-      display: grid;
-      place-items: center;
+      aspect-ratio: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       font-size: 1rem;
       color: #f5f3ff;
@@ -179,11 +176,12 @@
       scroll-snap-align: center;
       position: relative;
       overflow: hidden;
+      max-height: 400px;
     }
     .memory-card img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
+      object-fit: contain;
       border-radius: 22px;
     }
     .memory-card::before {
@@ -256,11 +254,17 @@
           <p id="password-status" class="status"></p>
         </div>
       </div>
-      <div id="story-content" class="hidden">
-        <div id="typing-screen" class="screen">
+        <div id="entry-screen" class="screen hidden">
+        <div class="card">
+          <p class="title">Dramaaaa unloading for my Dramebaaz… 🎭❤️</p>
+          <p class="subtitle">Tap this, Bachaa… I promise it’s worth it 🫶</p>
+          <button id="entry-button" class="button">Open the drama</button>
+</div>
+</div>
+        <div id="typing-screen" class="screen hidden">
           <div class="card typetext" id="typing-text"></div>
         </div>
-        <div id="story-1-screen" class="screen">
+        <div id="story-1-screen" class="screen hidden">
           <div class="image-placeholder" data-label="Image 1">
             <img src="Image 1.jpeg" alt="Image 1" />
           </div>
@@ -268,7 +272,7 @@
             <p>Every story has a beginning… and somehow, ours started at Amity Global Business School ❤️</p>
           </div>
         </div>
-        <div id="story-2-screen" class="screen">
+        <div id="story-2-screen" class="screen hidden">
           <div class="image-placeholder" data-label="Image 2">
             <img src="Image 2.jpeg" alt="Image 2" />
           </div>
@@ -276,29 +280,29 @@
             <p>From being complete strangers…<br>to becoming each other’s lifeline ❤️</p>
             <p>From travelling for college…<br>to our first international trip 🌍</p>
             <p>From café hopping…<br>to now realizing that meeting matters more than the place ☕</p>
-            <p>Assignments, sleepless nights, managing events…<br>to YOU hosting your own art workshop 😭✨</p>
+            <p>Assignments, sleepless nights, managing events…<br>to YOU hosting your own art workshop✨</p>
             <p>It’s not like there was one moment<br>when everything changed…</p>
             <p>We just went with the flow—<br>and somewhere in between…<br>magic happened ✨</p>
           </div>
         </div>
-        <div id="transition-1-screen" class="screen">
+        <div id="transition-1-screen" class="screen hidden">
           <div class="card text-block">
             <p>And for the first time…<br>I actually didn’t know how to roast you 😭💀</p>
           </div>
         </div>
-        <div id="roast-screen" class="screen">
+        <div id="roast-screen" class="screen hidden">
           <div class="card text-block">
             <p>Pata nahi kyun…<br>yeh bhi mushkil se hua 💀</p>
             <p>Tujhe mujhe itni cheezein bana ke khilani thi—<br>tune nahi kiya 😌<br>ab yeh saal mein karne wali hai tu 😤</p>
             <p>Aur haan—<br>thoda patience rakh<br>full Don attitude 😌🔥<br>aur thoda chillana kam kar please 😭💀</p>
           </div>
         </div>
-        <div id="transition-2-screen" class="screen">
+        <div id="transition-2-screen" class="screen hidden">
           <div class="card text-block">
             <p>But okay… enough of me talking 😌<br>Let’s see if you actually deserve to move ahead 👀</p>
           </div>
         </div>
-        <div id="game-intro-screen" class="screen">
+        <div id="game-intro-screen" class="screen hidden">
           <div class="card text-block">
             <p>Answer honestly, Bachaa…<br>only YOU can unlock what’s next ❤️</p>
           </div>
@@ -386,7 +390,6 @@
   <script>
     const flowerTrail = document.querySelector('.flower-trail');
     const passwordScreen = document.getElementById('password-screen');
-    const storyContent = document.getElementById('story-content');
     const passwordInput = document.getElementById('password-input');
     const passwordStatus = document.getElementById('password-status');
     const passwordSubmit = document.getElementById('password-submit');
@@ -400,44 +403,68 @@
     const questions = [
       {
         text: 'Your expressions during any situation are:',
-        options: ['Normal', 'Slightly dramatic', 'Full Netflix series 🎬💀 ✅'],
+        options: ['Normal', 'Slightly dramatic', 'Full Netflix series'],
+        correctIndex: 2,
         response: 'Expression Queen confirmed 😌👑'
       },
       {
         text: 'What is your hidden talent?',
         options: ['Irritating me 💀', 'Being cute 🥺', 'Being smart 🧠'],
+        correctIndex: 0,
         response: 'I KNEW IT 😭 you enjoy this way too much'
       },
       {
         text: 'Masai Mara mein kisko dekh ke bhaage the…\nnahi actually giri kiske vajah se 👀💀',
-        options: ['Baboons', 'Cow', 'Better not to say out loud 💀'],
+        options: ['Baboons', 'Cow', 'Better not to say out loud'],
+        correctIndex: 2,
         response: 'Yeah… let’s keep that between us 😂'
       }
     ];
-    passwordSubmit.addEventListener('click', () => {
-      const value = passwordInput.value.trim().toLowerCase();
-      if (!value) {
-        passwordStatus.textContent = 'Enter the name to continue.';
-        return;
-      }
-      if (value === 'bachaa') {
-        passwordStatus.textContent = '';
-        passwordScreen.classList.add('hidden');
-        storyContent.classList.remove('hidden');
-        playMusic();
-        showFlowers();
-        startTyping('Bachaa… finally it’s the day ❤️\nAviva Day 😭🫶', typingText);
-        showQuestion();
-        setTimeout(() => {
-          document.getElementById('typing-screen').scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      } else {
-        passwordStatus.textContent = 'Oops, that is not the secret name. Try again.';
-      }
-    });
-    passwordInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') passwordSubmit.click();
-    });
+    if (passwordSubmit) {
+      passwordSubmit.addEventListener('click', () => {
+        const value = passwordInput.value.trim().toLowerCase();
+        if (!value) {
+          passwordStatus.textContent = 'Enter the name to continue.';
+          return;
+        }
+        if (value === 'bachaa') {
+          passwordStatus.textContent = '';
+          passwordScreen.classList.add('hidden');
+          document.getElementById('entry-screen').classList.remove('hidden');
+        } else {
+          passwordStatus.textContent = 'Oops, that is not the secret name. Try again.';
+        }
+      });
+      passwordInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') passwordSubmit.click();
+      });
+    } else {
+      console.error('passwordSubmit button not found');
+    }
+    const entryButton = document.getElementById('entry-button');
+    if (!entryButton) {
+      console.error('entryButton not found');
+    }
+
+if (entryButton) {
+  entryButton.addEventListener('click', () => {
+  document.getElementById('entry-screen').classList.add('hidden');
+  document.getElementById('typing-screen').classList.remove('hidden');
+  document.getElementById('story-1-screen').classList.remove('hidden');
+  document.getElementById('story-2-screen').classList.remove('hidden');
+  document.getElementById('transition-1-screen').classList.remove('hidden');
+  document.getElementById('roast-screen').classList.remove('hidden');
+  document.getElementById('transition-2-screen').classList.remove('hidden');
+  document.getElementById('game-intro-screen').classList.remove('hidden');
+  playMusic();
+  showFlowers();
+  const text = 'Bachaa… finally it\'s the day ❤️\nAviva Day ❤️🫶';
+  startTyping(text, typingText);
+  setTimeout(() => {
+    document.getElementById('typing-screen').scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+});
+}
     function startTyping(text, element) {
       element.textContent = '';
       const chars = text.split('');
@@ -501,20 +528,27 @@
       const q = questions[currentQuestion];
       gameQuestion.textContent = q.text;
       gameOptions.innerHTML = '';
-      q.options.forEach(optionText => {
+      q.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'option';
         button.type = 'button';
         button.textContent = optionText;
-        button.addEventListener('click', () => selectOption());
+        button.addEventListener('click', () => selectOption(index));
         gameOptions.appendChild(button);
       });
     }
-    function selectOption() {
+    function selectOption(selectedIndex) {
       const q = questions[currentQuestion];
-      gameResponse.textContent = q.response;
-      Array.from(gameOptions.children).forEach(button => button.disabled = true);
-      screenTimer = setTimeout(nextGameQuestion, 1800);
+      const isCorrect = selectedIndex === q.correctIndex;
+      
+      if (isCorrect) {
+        gameResponse.textContent = q.response;
+        Array.from(gameOptions.children).forEach(button => button.disabled = true);
+        screenTimer = setTimeout(nextGameQuestion, 1800);
+      } else {
+        gameResponse.textContent = 'Oops, try again! 💫';
+        gameResponse.style.color = '#ff6b6b';
+      }
     }
     function nextGameQuestion() {
       currentQuestion += 1;
@@ -527,10 +561,12 @@
         document.getElementById('final-transition-screen').classList.remove('hidden');
         document.getElementById('final-screen').classList.remove('hidden');
         gameResponse.textContent = 'You unlocked it! Scroll down to continue the story.';
+        gameResponse.style.color = '#b8b0ff';
         document.getElementById('unlock-screen').scrollIntoView({ behavior: 'smooth' });
         return;
       }
       gameResponse.textContent = '';
+      gameResponse.style.color = '#b8b0ff';
       showQuestion();
     }
     function restart() {
@@ -538,8 +574,15 @@
       passwordStatus.textContent = '';
       typingText.textContent = '';
       flowerTrail.innerHTML = '';
-      storyContent.classList.add('hidden');
       passwordScreen.classList.remove('hidden');
+      document.getElementById('entry-screen').classList.add('hidden');
+      document.getElementById('typing-screen').classList.add('hidden');
+      document.getElementById('story-1-screen').classList.add('hidden');
+      document.getElementById('story-2-screen').classList.add('hidden');
+      document.getElementById('transition-1-screen').classList.add('hidden');
+      document.getElementById('roast-screen').classList.add('hidden');
+      document.getElementById('transition-2-screen').classList.add('hidden');
+      document.getElementById('game-intro-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('unlock-screen').classList.add('hidden');
       document.getElementById('video-transition-screen').classList.add('hidden');
@@ -550,7 +593,31 @@
       document.getElementById('final-screen').classList.add('hidden');
       currentQuestion = 0;
     }
+    // Ensure background music continues playing when video plays
+    document.addEventListener('DOMContentLoaded', () => {
+      const video = document.querySelector('#video-screen video');
+      const bgMusic = document.getElementById('bg-music');
+      
+      if (video && bgMusic) {
+        video.addEventListener('play', () => {
+          if (bgMusic.paused) {
+            bgMusic.play().catch(() => {});
+          }
+        });
+        
+        video.addEventListener('pause', () => {
+          if (bgMusic.paused) {
+            bgMusic.play().catch(() => {});
+          }
+        });
+        
+        video.addEventListener('ended', () => {
+          if (bgMusic.paused) {
+            bgMusic.play().catch(() => {});
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>
-
